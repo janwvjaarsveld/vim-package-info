@@ -28,7 +28,7 @@ use {
 }
 ```
 
-or with [lazy.nvim]("https://github.com.folke/lazy.nvim"):
+or with [lazy.nvim](https://github.com.folke/lazy.nvim):
 
 ```lua
 {
@@ -70,7 +70,7 @@ require("vim-readme").setup({
     :VimReadme nvim-treesitter/nvim-treesitter
     ```
 
-    2. Fetch from Text Under Cursor
+ 2. Fetch from Text Under Cursor
     If you place your cursor on a string like "nvim-treesitter/nvim-treesitter" (quotes included), you can simply run:
 
     ```vim
@@ -80,10 +80,11 @@ require("vim-readme").setup({
     and it will parse the repository name from between the quotes and fetch the README automatically.
 
  3. Floating Window Behavior
- • Press q in Normal mode to close the floating window.
- • Press o in Normal mode to open the GitHub link in your browser (uses vim.ui.open()).
+     - Press q in Normal mode to close the floating window.
+     - Press o in Normal mode to open the GitHub link in your browser (uses vim.ui.open()).
 
 ### Command Reference
+
 - :<command_name> (by default, :VimReadme)
 - :VimReadme <username/repository> – fetch the README.md for that repository.
 - :VimReadme (with no args) – fetch from the string under your cursor (if quoted).
@@ -91,6 +92,7 @@ require("vim-readme").setup({
 ### Keymaps
 
 By default, if you haven’t overridden them:
+
 - ***Global***
   - <leader>vr – calls the :VimReadme command.
 - ***Within the Floating Window***
