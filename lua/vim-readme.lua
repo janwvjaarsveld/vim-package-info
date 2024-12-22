@@ -26,14 +26,6 @@ local default_config = {
 -- This holds the merged user config + defaults
 local config = {}
 
--- Global state
-local state = {
-	floating = {
-		buf = -1,
-		win = -1,
-	},
-}
-
 --------------------------------------------------------------------------------
 -- Utility functions
 --------------------------------------------------------------------------------
@@ -41,7 +33,7 @@ local state = {
 --- Create a floating window with config-based width and height.
 --- @param opts table: { buf = <buf_handle>, title = <string> }
 local function create_floating_window(opts)
-	opts = opts or {}
+	opts = opts or { title = "Vim Readme" }
 	local width = math.floor(vim.o.columns * config.window.width_ratio)
 	local height = math.floor(vim.o.lines * config.window.height_ratio)
 
@@ -50,12 +42,7 @@ local function create_floating_window(opts)
 	local row = math.floor((vim.o.lines - height) / 2)
 
 	-- Create or reuse the given buffer
-	local buf
-	if vim.api.nvim_buf_is_valid(opts.buf) then
-		buf = opts.buf
-	else
-		buf = vim.api.nvim_create_buf(false, true) -- No file, scratch buffer
-	end
+	local buf = vim.api.nvim_create_buf(false, true) -- No file, scratch buffer
 
 	local win_config = {
 		relative = "editor",
@@ -65,7 +52,7 @@ local function create_floating_window(opts)
 		row = row,
 		style = "minimal",
 		border = config.window.border,
-		title = opts.title or "",
+		title = opts.title,
 		title_pos = "center",
 	}
 
@@ -165,45 +152,36 @@ local function fetch_markdown(package_name)
 	end
 
 	-- Create/reuse floating window
-	state.floating = create_floating_window({
-		buf = state.floating.buf,
+	local floating = create_floating_window({
 		title = package_name,
 	})
 
 	-- Buffer/window settings
-	vim.bo[state.floating.buf].filetype = "markdown"
-	vim.bo[state.floating.buf].bufhidden = "wipe"
-	vim.bo[state.floating.buf].buftype = ""
-	vim.wo[state.floating.win].wrap = true
+	vim.bo[floating.buf].filetype = "markdown"
+	vim.bo[floating.buf].bufhidden = "delete"
+	vim.bo[floating.buf].buftype = ""
+	vim.wo[floating.win].wrap = true
+	vim.api.nvim_buf_set_name(floating.buf, package_name .. "README.md")
 
 	-- Clear existing content and insert the fetched lines
-	vim.api.nvim_buf_set_lines(state.floating.buf, 0, -1, false, {})
 	local lines = vim.split(result, "\n")
-	vim.api.nvim_buf_set_lines(state.floating.buf, 0, -1, false, lines)
+	vim.api.nvim_buf_set_lines(floating.buf, 0, -1, false, lines)
 
 	-- Keymaps in floating buffer
 	vim.api.nvim_buf_set_keymap(
-		state.floating.buf,
+		floating.buf,
 		"n",
 		config.key_bindings.close,
 		"<cmd>bd!<CR>",
 		{ noremap = true, silent = true }
 	)
 	vim.api.nvim_buf_set_keymap(
-		state.floating.buf,
+		floating.buf,
 		"n",
 		config.key_bindings.open_git,
 		string.format([[<cmd>lua vim.ui.open("%s")<CR>]], git_link),
 		{ noremap = true, silent = true }
 	)
-
-	-- Cleanup on wipeout
-	vim.api.nvim_create_autocmd("BufWipeout", {
-		buffer = state.floating.buf,
-		callback = function()
-			state.floating = { buf = -1, win = -1 }
-		end,
-	})
 end
 
 --------------------------------------------------------------------------------
